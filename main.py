@@ -36,17 +36,15 @@ bird_species = my_db["BirdSpecies"]
 
 
 def create_post_db():
-    my_col.create_index({"post_id": 1}, {"unique": True})
+    my_col.create_index("post_id", unique=True)
 
 
 # post database should have url, poster, title, date
 
 # birds should have Family, genus, species, common name, scientific name
 
-def create_species_db():
-    # bird database should have Species, common name,
-    print("stuff goes here")
-    birdimport.file_import("birdlist.csv")
+def create_species_db(file_name):
+    birdimport.file_import(file_name)
 
 
 sub_to_search = "birdpics"
@@ -74,8 +72,8 @@ def obtain_new_info():
 
 
 if __name__ == '__main__':
-    print('*')
+    print('')
     create_post_db()
-    create_species_db()
+    create_species_db("birdlist.csv")
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

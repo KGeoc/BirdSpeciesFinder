@@ -12,19 +12,22 @@ bird_species = my_db["BirdSpecies"]
 #where scientific name includes genus and species
 def file_import(file_name):
     #makes common_name be the unique index.
-    bird_species.create_index({"common_name": 1}, {"unique": True})
+    bird_species.create_index("common_name",unique= True)
     with open(file_name, 'r') as file:
         reader = csv.reader(file)
         #use next to get rid of header row
         next(reader)
 
         for row in reader:
-            holder=row[2].split()
-            print(row[0], row[0].split()[-1], row[1], holder[0], holder[1], sep='\t')
-            bird_species.insert_one({'common_name': row[0],
-                                     "common_family": row[0].split()[-1],
-                                     "family_name": row[1],
-                                     "genus": row[2].split()[0],
-                                     "species": row[2].split()[1]
-                                     })
+            if(bird_species.find_one({'common_name':row[0]})):
+                continue
+            else:
+                holder=row[2].split()
+                bird_species.insert_one(
+                    {'common_name': row[0],
+                    "common_family": row[0].split()[-1],
+                    "family_name": row[1],
+                    "genus": holder[0],
+                    "species": holder[1]
+                    })
 
