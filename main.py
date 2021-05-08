@@ -36,7 +36,7 @@ bird_species = my_db["BirdSpecies"]
 
 
 def create_post_db():
-    my_col.createIndex({"url": 1}, {"unique": True})
+    my_col.createIndex({"post_id": 1}, {"unique": True})
 
 
 # post database should have url, poster, title, date
