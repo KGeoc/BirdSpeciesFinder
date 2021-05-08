@@ -3,6 +3,7 @@ import re
 import praw
 import pymongo
 import credentials
+import birdimport
 
 # This is a sample Python script.
 
@@ -28,19 +29,54 @@ def login_reddit():
 
 my_client = pymongo.MongoClient("mongodb://localhost:27017/")
 
-my_db = my_client["RedditInfo"]
+my_db = my_client["BirdInfo"]
 
 my_col = my_db["RedditBirdPosts"]
-my_col2 = my_db["RedditBirdSpecies"]
+bird_species = my_db["BirdSpecies"]
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def create_post_db():
+    my_col.createIndex({"url": 1}, {"unique": True})
 
 
-# Press the green button in the gutter to run the script.
+# post database should have url, poster, title, date
+
+# birds should have Family, genus, species, common name, scientific name
+
+def create_species_db():
+    # bird database should have Species, common name,
+    print("stuff goes here")
+    birdimport.file_import("birdlist.csv")
+
+
+sub_to_search = "birdpics"
+
+
+def obtain_new_info():
+
+    submissions = reddit.subreddit(sub_to_search).new(limit=500)
+
+    for posts in submissions:
+        time_Created = posts.created_utc
+        if my_col.find_one({"post_id": posts.id}):
+            continue
+        else:
+
+            my_col.insert_one({
+                "post_id": posts.id,
+                "username": posts.author,
+                "date": posts.created_utc,
+                "title": posts.title,
+                "subreddit": posts.subreddit,
+                "post_searched":False
+            })
+
+        text_line = str(posts.created_utc) + "\t"
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    print('*')
+    create_post_db()
+    create_species_db()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
