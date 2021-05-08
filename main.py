@@ -51,29 +51,30 @@ sub_to_search = "birdpics"
 
 
 def obtain_new_info():
-
     submissions = reddit.subreddit(sub_to_search).new(limit=500)
 
     for posts in submissions:
         if my_col.find_one({"post_id": posts.id}):
             continue
         else:
-
             my_col.insert_one({
                 "post_id": posts.id,
-                "username": posts.author,
+                "username": posts.author.name,
                 "date": posts.created_utc,
                 "title": posts.title,
-                "subreddit": posts.subreddit,
-                "post_searched":False
+                "subreddit": posts.subreddit.display_name,
+                "post_searched": False
             })
 
-        text_line = str(posts.created_utc) + "\t"
-
+def get_bird_families():
+    for fams in bird_species.find().distinct('common_family'):
+        print(fams)
 
 if __name__ == '__main__':
     print('')
-    create_post_db()
-    create_species_db("birdlist.csv")
+    # create_post_db()
+    # create_species_db("birdlist.csv")
+    # obtain_new_info()
+    get_bird_families()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
