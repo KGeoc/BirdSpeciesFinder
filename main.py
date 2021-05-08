@@ -36,7 +36,7 @@ bird_species = my_db["BirdSpecies"]
 
 
 def create_post_db():
-    my_col.createIndex({"post_id": 1}, {"unique": True})
+    my_col.create_index({"post_id": 1}, {"unique": True})
 
 
 # post database should have url, poster, title, date
@@ -57,7 +57,6 @@ def obtain_new_info():
     submissions = reddit.subreddit(sub_to_search).new(limit=500)
 
     for posts in submissions:
-        time_Created = posts.created_utc
         if my_col.find_one({"post_id": posts.id}):
             continue
         else:

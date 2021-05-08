@@ -12,7 +12,7 @@ bird_species = my_db["BirdSpecies"]
 #where scientific name includes genus and species
 def file_import(file_name):
     #makes common_name be the unique index.
-    bird_species.createIndex({"common_name": 1}, {"unique": True})
+    bird_species.create_index({"common_name": 1}, {"unique": True})
     with open(file_name, 'r') as file:
         reader = csv.reader(file)
         #use next to get rid of header row
