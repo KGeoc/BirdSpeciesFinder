@@ -5,13 +5,6 @@ import pymongo
 import credentials
 import birdimport
 
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-# TODO search get a list of all birds. Their scientific name if possible and english.
 
 # TODO implement a search that will first search for bird as species, robin, hummingbird, heron.
 #  Then search for subspecies, great blue heron, green heron.
@@ -66,9 +59,26 @@ def obtain_new_info():
                 "post_searched": False
             })
 
+
 def get_bird_families():
+    return bird_species.find().distinct('common_family')
+
+
+def find_bird_from_sentence(x):
     for fams in bird_species.find().distinct('common_family'):
-        print(fams)
+        print( re.search(rf"{fams}",x,flags=re.IGNORECASE))
+
+    qwer=bird_species.find().distinct('common_family')
+
+
+    #print(re.findall(r"(?=(" + '|'.join(qwer) + r"))", x))
+
+
+def test():
+    string_lst = ['fun', 'dum', 'sun', 'gum']
+    x = "I love to have fun."
+
+    print(    re.findall(r"(?=(" + '|'.join(string_lst) + r"))", x))
 
 if __name__ == '__main__':
     print('')
@@ -76,5 +86,7 @@ if __name__ == '__main__':
     # create_species_db("birdlist.csv")
     # obtain_new_info()
     get_bird_families()
+    find_bird_from_sentence("this is a Yellowthroat")
+    test()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
