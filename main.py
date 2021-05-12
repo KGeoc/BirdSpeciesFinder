@@ -73,13 +73,6 @@ def find_bird_from_sentence(x):
 
     #print(re.findall(r"(?=(" + '|'.join(qwer) + r"))", x))
 
-
-def test():
-    string_lst = ['fun', 'dum', 'sun', 'gum']
-    x = "I love to have fun."
-
-    print(    re.findall(r"(?=(" + '|'.join(string_lst) + r"))", x))
-
 if __name__ == '__main__':
     print('')
     # create_post_db()
