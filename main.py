@@ -5,7 +5,6 @@ import pymongo
 import credentials
 import birdimport
 
-
 # TODO implement a search that will first search for bird as species, robin, hummingbird, heron.
 #  Then search for subspecies, great blue heron, green heron.
 
@@ -60,18 +59,29 @@ def obtain_new_info():
             })
 
 
+bird_fams = []
+
+
 def get_bird_families():
-    return bird_species.find().distinct('common_family')
+    global bird_fams
+    bird_fams = bird_species.find({}, {"_id": 0, "common_family": 1}).distinct('common_family')
 
 
 def find_bird_from_sentence(x):
-    for fams in bird_species.find().distinct('common_family'):
-        print( re.search(rf"{fams}",x,flags=re.IGNORECASE))
+    for fams in bird_fams:
+        if (re.search(rf"{fams}", x, flags=re.IGNORECASE)):
+            # continue
+            print("Found match")
 
-    qwer=bird_species.find().distinct('common_family')
 
+def get_bird_posts():
+    birdposts = list(my_col.find({}, {"_id": 0, "title": 1}))
+    print(len(birdposts))
+    for x in birdposts:
+        find_bird_from_sentence(x["title"])
 
-    #print(re.findall(r"(?=(" + '|'.join(qwer) + r"))", x))
+    # print(re.findall(r"(?=(" + '|'.join(qwer) + r"))", x))
+
 
 if __name__ == '__main__':
     print('')
@@ -79,7 +89,7 @@ if __name__ == '__main__':
     # create_species_db("birdlist.csv")
     # obtain_new_info()
     get_bird_families()
+    get_bird_posts()
     find_bird_from_sentence("this is a Yellowthroat")
-    test()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
