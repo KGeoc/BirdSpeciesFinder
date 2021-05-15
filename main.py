@@ -60,18 +60,25 @@ def obtain_new_info():
 
 
 bird_fams = []
+bird_specs=[]
 
 
 def get_bird_families():
     global bird_fams
     bird_fams = bird_species.find({}, {"_id": 0, "common_family": 1}).distinct('common_family')
+    global bird_specs
+    bird_specs=bird_species.find({},{"_id": 0, "common_family": 1,'common_name':1})
+
 
 
 def find_bird_from_sentence(x):
     for fams in bird_fams:
-        if (re.search(rf"{fams}", x, flags=re.IGNORECASE)):
+        if (re.search(rf"\W{fams}\W", x, flags=re.IGNORECASE)):
             # continue
-            print("Found match")
+            for results in bird_species.find({'common_family':fams},{'_id':0,'common_name':1}):
+                if (re.search(rf"\W{results['common_name']}\W", x, flags=re.IGNORECASE)):
+                    print(x)
+                    print(results)
 
 
 def get_bird_posts():
@@ -87,7 +94,7 @@ if __name__ == '__main__':
     print('')
     # create_post_db()
     # create_species_db("birdlist.csv")
-    # obtain_new_info()
+    #obtain_new_info()
     get_bird_families()
     get_bird_posts()
     find_bird_from_sentence("this is a Yellowthroat")
