@@ -1,5 +1,7 @@
 import datetime as dt
 import re
+import time
+
 import praw
 import pymongo
 import credentials
@@ -60,32 +62,44 @@ def obtain_new_info():
 
 
 bird_fams = []
-bird_specs=[]
+bird_specs = []
 
 
 def get_bird_families():
     global bird_fams
     bird_fams = bird_species.find({}, {"_id": 0, "common_family": 1}).distinct('common_family')
     global bird_specs
-    bird_specs=bird_species.find({},{"_id": 0, "common_family": 1,'common_name':1})
+    bird_specs = list(bird_species.find({}, {"_id": 0, "common_family": 1, 'common_name': 1}))
 
-
+found_matches=0
 
 def find_bird_from_sentence(x):
+
     for fams in bird_fams:
-        if (re.search(rf"\W{fams}\W", x, flags=re.IGNORECASE)):
-            # continue
-            for results in bird_species.find({'common_family':fams},{'_id':0,'common_name':1}):
-                if (re.search(rf"\W{results['common_name']}\W", x, flags=re.IGNORECASE)):
-                    print(x)
-                    print(results)
+        if re.search(rf"\W{fams}\W", x, flags=re.IGNORECASE):
+
+            copy_of_bird_specs = bird_specs
+            new_list = list(filter(lambda a: fams in a['common_family'], copy_of_bird_specs))
+            found=False
+            for entries in new_list:
+                if re.search(rf"(?<!\w){entries['common_name']}(?!=\w)", x, flags=re.IGNORECASE):
+                    global found_matches
+                    found_matches+=1
+                    found=True
+                    #print(x)
+                    #print(entries)
+                    break
+            if found==False:
+                print("not species\n",x)
+            break
 
 
 def get_bird_posts():
-    birdposts = list(my_col.find({}, {"_id": 0, "title": 1}))
-    print(len(birdposts))
-    for x in birdposts:
+    bird_posts = list(my_col.find({}, {"_id": 0, "title": 1}))
+    print(len(bird_posts))
+    for x in bird_posts:
         find_bird_from_sentence(x["title"])
+    print(found_matches)
 
     # print(re.findall(r"(?=(" + '|'.join(qwer) + r"))", x))
 
@@ -97,6 +111,7 @@ if __name__ == '__main__':
     #obtain_new_info()
     get_bird_families()
     get_bird_posts()
+    print("found ",found_matches)
     find_bird_from_sentence("this is a Yellowthroat")
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
