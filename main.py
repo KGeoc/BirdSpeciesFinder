@@ -1,7 +1,7 @@
 import datetime as dt
+import TrieNode
 import re
 import time
-
 import praw
 import pymongo
 import credentials
@@ -71,35 +71,64 @@ def get_bird_families():
     global bird_specs
     bird_specs = list(bird_species.find({}, {"_id": 0, "common_family": 1, 'common_name': 1}))
 
-found_matches=0
 
-def find_bird_from_sentence(x):
+found_matches = 0
 
+
+
+def make_trie():
+
+    bird_trie=TrieNode
+    root=TrieNode.TrieNode('*')
+    for common_birds in bird_specs:
+
+        bird_trie.add(root,re.sub('[^a-zA-Z0-9]', '', common_birds['common_name']).lower())
+
+
+
+def new_find_bird_from_sentence(x):
     for fams in bird_fams:
         if re.search(rf"\W{fams}\W", x, flags=re.IGNORECASE):
+            pass
 
+
+# possibility search one worded bird names in one function and then multi worded bird names in another function.
+# need to find where bird fam was initially found
+# or can use trie to search for all 2+ worded birds
+
+def find_bird_from_sentence(x):
+    for fams in bird_fams:
+        if re.search(rf"\W{fams}\W", x, flags=re.IGNORECASE):
+            global found_matches
             copy_of_bird_specs = bird_specs
             new_list = list(filter(lambda a: fams in a['common_family'], copy_of_bird_specs))
-            found=False
+            if len(new_list) == 1:
+                # need to not search any longer
+                print("this bird should be skipped", fams)
+
+                found_matches += 1
+                pass
+            found = False
             for entries in new_list:
-                if re.search(rf"(?<!\w){entries['common_name']}(?!=\w)", x, flags=re.IGNORECASE):
-                    global found_matches
-                    found_matches+=1
-                    found=True
-                    #print(x)
-                    #print(entries)
+                if re.search(rf"(?:\W|^){entries['common_name']}", x, flags=re.IGNORECASE):
+                    found_matches += 1
+                    found = True
+                    # print(x)
+                    # print(entries)
                     break
-            if found==False:
-                print("not species\n",x)
+            if not found:
+                # print("not species\n",x)
+                pass
             break
 
 
 def get_bird_posts():
     bird_posts = list(my_col.find({}, {"_id": 0, "title": 1}))
-    print(len(bird_posts))
+
     for x in bird_posts:
         find_bird_from_sentence(x["title"])
-    print(found_matches)
+    print(len(bird_posts), "posts")
+    print(found_matches, "results")
 
     # print(re.findall(r"(?=(" + '|'.join(qwer) + r"))", x))
 
@@ -108,10 +137,11 @@ if __name__ == '__main__':
     print('')
     # create_post_db()
     # create_species_db("birdlist.csv")
-    #obtain_new_info()
+    # obtain_new_info()
+
     get_bird_families()
-    get_bird_posts()
-    print("found ",found_matches)
-    find_bird_from_sentence("this is a Yellowthroat")
+    make_trie()
+    #print(len(bird_fams))
+    #get_bird_posts()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
