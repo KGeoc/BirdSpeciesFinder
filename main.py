@@ -137,6 +137,7 @@ def get_bird_posts():
     method_A = 0
     method_B = 0
     for x in bird_posts:
+        print(x)
         tic = time.perf_counter()
         find_bird_from_sentence(x["title"])
         toc = time.perf_counter()
@@ -151,6 +152,11 @@ def get_bird_posts():
     print(len(bird_posts), "posts")
     print(found_matches_A, "results A")
     print(found_matches_B, "results B")
+    #current result is method B is faster and more accurate.
+    #Method A	 69.55064550000003 Method B	 67.19713309999995
+    #1205 posts
+    #438 results A
+    #516 results B
 
     # print(re.findall(r"(?=(" + '|'.join(qwer) + r"))", x))
 
