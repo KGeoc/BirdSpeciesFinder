@@ -1,5 +1,5 @@
 import datetime as dt
-import TrieNode
+import TrieNode as bird_trie
 import re
 import time
 import praw
@@ -45,6 +45,7 @@ sub_to_search = "birdpics"
 
 
 def obtain_new_info():
+    added_posts = 0
     submissions = reddit.subreddit(sub_to_search).new(limit=500)
 
     for posts in submissions:
@@ -59,6 +60,8 @@ def obtain_new_info():
                 "subreddit": posts.subreddit.display_name,
                 "post_searched": False
             })
+            added_posts += 1
+    return added_posts
 
 
 bird_fams = []
@@ -72,24 +75,30 @@ def get_bird_families():
     bird_specs = list(bird_species.find({}, {"_id": 0, "common_family": 1, 'common_name': 1}))
 
 
-found_matches = 0
+found_matches_A = 0
+found_matches_B = 0
 
+root = bird_trie.TrieNode('*')
 
 
 def make_trie():
-
-    bird_trie=TrieNode
-    root=TrieNode.TrieNode('*')
+    # bird_trie=TrieNode
     for common_birds in bird_specs:
-
-        bird_trie.add(root,re.sub('[^a-zA-Z0-9]', '', common_birds['common_name']).lower())
-
+        bird_trie.add(root, re.sub('[^a-zA-Z0-9]', '', common_birds['common_name']).lower())
+    print(bird_trie.find_prefix(root, 'lesserrhea'))
 
 
 def new_find_bird_from_sentence(x):
     for fams in bird_fams:
-        if re.search(rf"\W{fams}\W", x, flags=re.IGNORECASE):
-            pass
+        found_bird = re.search(rf"\W{fams}\W", x, flags=re.IGNORECASE)
+        if found_bird:
+            new_word = re.sub('[^a-zA-Z0-9]', '', x[0:found_bird.span()[1]]).lower()
+            for position in range(0, found_bird.span()[0]):
+                if bird_trie.find_prefix(root, new_word[position:]):
+                    # print("True")
+                    global found_matches_B
+                    found_matches_B += 1
+                    return
 
 
 # possibility search one worded bird names in one function and then multi worded bird names in another function.
@@ -99,19 +108,19 @@ def new_find_bird_from_sentence(x):
 def find_bird_from_sentence(x):
     for fams in bird_fams:
         if re.search(rf"\W{fams}\W", x, flags=re.IGNORECASE):
-            global found_matches
+            global found_matches_A
             copy_of_bird_specs = bird_specs
             new_list = list(filter(lambda a: fams in a['common_family'], copy_of_bird_specs))
             if len(new_list) == 1:
                 # need to not search any longer
                 print("this bird should be skipped", fams)
 
-                found_matches += 1
+                found_matches_A += 1
                 pass
             found = False
             for entries in new_list:
                 if re.search(rf"(?:\W|^){entries['common_name']}", x, flags=re.IGNORECASE):
-                    found_matches += 1
+                    found_matches_A += 1
                     found = True
                     # print(x)
                     # print(entries)
@@ -125,10 +134,23 @@ def find_bird_from_sentence(x):
 def get_bird_posts():
     bird_posts = list(my_col.find({}, {"_id": 0, "title": 1}))
 
+    method_A = 0
+    method_B = 0
     for x in bird_posts:
+        tic = time.perf_counter()
         find_bird_from_sentence(x["title"])
+        toc = time.perf_counter()
+        method_A += toc - tic
+
+        tic = time.perf_counter()
+        new_find_bird_from_sentence(x["title"])
+        toc = time.perf_counter()
+        method_B += toc - tic
+
+    print("Method A\t", method_A, "Method B\t", method_B)
     print(len(bird_posts), "posts")
-    print(found_matches, "results")
+    print(found_matches_A, "results A")
+    print(found_matches_B, "results B")
 
     # print(re.findall(r"(?=(" + '|'.join(qwer) + r"))", x))
 
@@ -137,11 +159,12 @@ if __name__ == '__main__':
     print('')
     # create_post_db()
     # create_species_db("birdlist.csv")
-    # obtain_new_info()
+    # print(obtain_new_info())
 
     get_bird_families()
     make_trie()
-    #print(len(bird_fams))
-    #get_bird_posts()
+
+    # print(len(bird_fams))
+    get_bird_posts()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

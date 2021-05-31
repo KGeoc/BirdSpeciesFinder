@@ -66,11 +66,11 @@ def find_prefix(root, prefix: str) -> Tuple[bool, int]:
                 break
         # Return False anyway when we did not find a char.
         if char_not_found:
-            return False, 0
+            return False
     # Well, we are here means we have found the prefix. Return true to indicate that
     # And also the counter of the last node. This indicates how many words have this
     # prefix
-    return True, node.counter
+    return True#, node.counter
 
 
 if __name__ == "__main__":
