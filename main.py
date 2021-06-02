@@ -1,7 +1,7 @@
 import datetime as dt
 import sys
 
-import TrieNode as Bird_Trie
+from TrieNode import TrieNode as Bird_Trie
 import re
 import time
 import praw
@@ -17,6 +17,8 @@ reddit = praw.Reddit(username=credentials.username,
                      client_id=credentials.client_id,
                      client_secret=credentials.client_secret,
                      user_agent=credentials.user_agent)
+
+Bird_Trie = Bird_Trie()
 
 
 def login_reddit():
@@ -80,13 +82,13 @@ def get_bird_families():
 found_matches_A = 0
 found_matches_B = 0
 
-root = Bird_Trie.TrieNode('*')
 
 def make_trie():
     # bird_trie=TrieNode
+    Bird_Trie.add_word("asdf")
     for common_birds in bird_specs:
-        Bird_Trie.add(root, re.sub('[^a-zA-Z0-9]', '', common_birds['common_name']).lower())
-    print(Bird_Trie.find_prefix(root, 'lesserrhea'))
+        Bird_Trie.add_word(re.sub('[^a-zA-Z0-9]', '', common_birds['common_name']).lower())
+    print(Bird_Trie.find_word('lesserrhea'))
 
 
 def new_find_bird_from_sentence(x):
@@ -95,15 +97,22 @@ def new_find_bird_from_sentence(x):
         if found_bird:
             new_word = re.sub('[^a-zA-Z0-9]', '', x[0:found_bird.span()[1]]).lower()
             for position in range(0, found_bird.span()[0]):
-                if Bird_Trie.find_prefix(root, new_word[position:]):
+                if new_word == 'afuzzynewbarredowlet':
+                    print("sdfasd")
+                if Bird_Trie.find_word(new_word[position:]):
                     # print("True")
+
+                    # TODO currently there is an issue where after my initial search the spaces are
+                    #  reduced this makes the span go out of bounds if too many words are used and needs to be fixed
+
+                    # TODO need to do a 2nd search in case of cases like owl and owlet
                     global found_matches_B
                     found_matches_B += 1
-                    if(new_word[position:]=="barredowlet"):
+                    if new_word[position:] == "barredowlet":
                         print("fasdf")
                     return bird_species.find_one(
-                        {"concat_name":new_word[position:]},
-                        {"_id":0,"common_name":1})["common_name"]
+                        {"concat_name": new_word[position:]},
+                        {"_id": 0, "common_name": 1})["common_name"]
     return False
 
 
