@@ -56,14 +56,24 @@ def obtain_new_info():
         if my_col.find_one({"post_id": posts.id}):
             continue
         else:
-            my_col.insert_one({
-                "post_id": posts.id,
-                "username": posts.author.name,
-                "date": posts.created_utc,
-                "title": posts.title,
-                "subreddit": posts.subreddit.display_name,
-                "post_searched": False
-            })
+            try:
+                my_col.insert_one({
+                    "post_id": posts.id,
+                    "username": posts.author.name,
+                    "date": posts.created_utc,
+                    "title": posts.title,
+                    "subreddit": posts.subreddit.display_name,
+                    "post_searched": False
+                })
+            except AttributeError as ex:
+                my_col.insert_one({
+                    "post_id": posts.id,
+                    "username": "None",
+                    "date": posts.created_utc,
+                    "title": posts.title,
+                    "subreddit": posts.subreddit.display_name,
+                    "post_searched": False
+                })
             added_posts += 1
     return added_posts
 
@@ -183,12 +193,12 @@ if __name__ == '__main__':
     print('')
     # create_post_db()
     # create_species_db("birdlist.csv")
-    # print(obtain_new_info())
+    print(obtain_new_info())
 
-    get_bird_families()
-    make_trie()
+    #get_bird_families()
+    #make_trie()
 
-    print(len(bird_fams))
-    get_bird_posts()
+    #print(len(bird_fams))
+    #get_bird_posts()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
