@@ -98,31 +98,31 @@ def make_trie():
     Bird_Trie.add_word("asdf")
     for common_birds in bird_specs:
         Bird_Trie.add_word(re.sub('[^a-zA-Z0-9]', '', common_birds['common_name']).lower())
-    print(Bird_Trie.find_word('lesserrhea'))
+    #print(Bird_Trie.find_word('lesserrhea'))
 
 
 def new_find_bird_from_sentence(x):
+    if "sidhe" in x:
+        print("FDGSDFG")
     for fams in bird_fams:
-        found_bird = re.search(rf"\W{fams}\W", x, flags=re.IGNORECASE)
+        found_bird = re.search(rf"(?:\W|^)({fams})(?:\W|$)", x, flags=re.IGNORECASE)
         if found_bird:
             new_word = re.sub('[^a-zA-Z0-9]', '', x[0:found_bird.span()[1]]).lower()
             for position in range(0, found_bird.span()[0]):
                 if new_word == 'afuzzynewbarredowlet':
                     print("sdfasd")
-                if Bird_Trie.find_word(new_word[position:]):
+                listoffound=Bird_Trie.find_word(new_word[position:])
+
+                if listoffound:
                     # print("True")
-
-                    # TODO currently there is an issue where after my initial search the spaces are
-                    #  reduced this makes the span go out of bounds if too many words are used and needs to be fixed
-
-                    # TODO need to do a 2nd search in case of cases like owl and owlet
-                    global found_matches_B
-                    found_matches_B += 1
-                    if new_word[position:] == "barredowlet":
-                        print("fasdf")
-                    return bird_species.find_one(
-                        {"concat_name": new_word[position:]},
-                        {"_id": 0, "common_name": 1})["common_name"]
+                    for found in listoffound:
+                        global found_matches_B
+                        found_matches_B += 1
+                        if new_word[position:] == "barredowlet":
+                            print("fasdf")
+                        return bird_species.find_one(
+                            {"concat_name": new_word[position:position+found]},
+                            {"_id": 0, "common_name": 1})["common_name"]
     return False
 
 
@@ -131,6 +131,7 @@ def new_find_bird_from_sentence(x):
 # or can use trie to search for all 2+ worded birds
 
 def find_bird_from_sentence(x):
+
     for fams in bird_fams:
         if re.search(rf"\W{fams}\W", x, flags=re.IGNORECASE):
             global found_matches_A
@@ -166,7 +167,7 @@ def get_bird_posts():
     for x in bird_posts:
         print(x)
         tic = time.perf_counter()
-        print(find_bird_from_sentence(x["title"]))
+        #print(find_bird_from_sentence(x["title"]))
         toc = time.perf_counter()
         method_A += toc - tic
 
@@ -188,17 +189,20 @@ def get_bird_posts():
 
     # print(re.findall(r"(?=(" + '|'.join(qwer) + r"))", x))
 
+def testresults(x):
+    print(new_find_bird_from_sentence(x))
 
 if __name__ == '__main__':
     print('')
     # create_post_db()
     # create_species_db("birdlist.csv")
-    print(obtain_new_info())
+    #print(obtain_new_info())
 
-    #get_bird_families()
-    #make_trie()
+    get_bird_families()
+    make_trie()
+    testresults("test with barred owlet")
 
     #print(len(bird_fams))
-    #get_bird_posts()
+    get_bird_posts()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

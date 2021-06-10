@@ -12,16 +12,28 @@ class TrieNode:
         current_node[""] = "*"
 
     def find_word(self, word):
+        correct=[]
         current_node = self.root
+        depth=1
         for letter in word:
             if letter not in current_node:
-                return False
+                if len(correct):
+                    return correct
+                else:
+                    return False
             else:
                 current_node = current_node[letter]
+                if "" in current_node:
+                    correct.append(depth)
+            depth+=1
         if "*" in current_node:
-            return True
+            correct.append(depth)
+            return correct
         else:
-            return False
+            if len(correct):
+                return correct
+            else:
+                return False
 
 
 if __name__ == "__main__":
