@@ -101,7 +101,7 @@ def make_trie():
     #print(Bird_Trie.find_word('lesserrhea'))
 
 
-def new_find_bird_from_sentence(x):
+def find_bird_from_sentence(x):
     if "sidhe" in x:
         print("FDGSDFG")
     for fams in bird_fams:
@@ -130,32 +130,22 @@ def new_find_bird_from_sentence(x):
 # need to find where bird fam was initially found
 # or can use trie to search for all 2+ worded birds
 
-def find_bird_from_sentence(x):
-
+def new_find_bird_from_sentence(x):
     for fams in bird_fams:
-        if re.search(rf"\W{fams}\W", x, flags=re.IGNORECASE):
-            global found_matches_A
-            copy_of_bird_specs = bird_specs
-            new_list = list(filter(lambda a: fams in a['common_family'], copy_of_bird_specs))
-            if len(new_list) == 1:
-                # need to not search any longer
-                print("this bird should be skipped", fams)
+        found_bird = re.search(rf"(?:\W|^)({fams})(?:\W|$)", x, flags=re.IGNORECASE)
+        if found_bird:
+            new_word = re.sub('[^a-zA-Z0-9]', '', x[0:found_bird.span()[1]]).lower()
 
-                found_matches_A += 1
-                pass
-            found = False
-            for entries in new_list:
-                if re.search(rf"(?:\W|^){entries['common_name']}", x, flags=re.IGNORECASE):
-                    found_matches_A += 1
-                    found = True
-                    # print(x)
-                    # print(entries)
-                    return entries
-                    break
-            if not found:
-                # print("not species\n",x)
-                pass
-            break
+            for position in range(0, len(new_word)-1):
+                listoffound=Bird_Trie.find_word(new_word[position:])
+
+                if listoffound:
+                    for found in listoffound:
+                        global found_matches_B
+                        found_matches_B += 1
+                        return bird_species.find_one(
+                            {"concat_name": new_word[position:position+found]},
+                            {"_id": 0, "common_name": 1})["common_name"]
     return False
 
 
@@ -167,12 +157,12 @@ def get_bird_posts():
     for x in bird_posts:
         print(x)
         tic = time.perf_counter()
-        #print(find_bird_from_sentence(x["title"]))
+        print(new_find_bird_from_sentence(x["title"]))
         toc = time.perf_counter()
         method_A += toc - tic
 
         tic = time.perf_counter()
-        print(new_find_bird_from_sentence(x["title"]))
+        #print(find_bird_from_sentence(x["title"]))
         toc = time.perf_counter()
         method_B += toc - tic
         print("Method A\t", method_A, "Method B\t", method_B)
@@ -200,7 +190,7 @@ if __name__ == '__main__':
 
     get_bird_families()
     make_trie()
-    testresults("test with barred owlet")
+    testresults("Red-winged blackbird among some cattails in Maine️")
 
     #print(len(bird_fams))
     get_bird_posts()
