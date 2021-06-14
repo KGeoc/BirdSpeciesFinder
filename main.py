@@ -98,7 +98,7 @@ def make_trie():
     Bird_Trie.add_word("asdf")
     for common_birds in bird_specs:
         Bird_Trie.add_word(re.sub('[^a-zA-Z0-9]', '', common_birds['common_name']).lower())
-    #print(Bird_Trie.find_word('lesserrhea'))
+
 
 
 def find_bird_from_sentence(x):
@@ -137,15 +137,19 @@ def new_find_bird_from_sentence(x):
             new_word = re.sub('[^a-zA-Z0-9]', '', x[0:found_bird.span()[1]]).lower()
 
             for position in range(0, len(new_word)-1):
-                listoffound=Bird_Trie.find_word(new_word[position:])
+                list_trie_results=Bird_Trie.find_word(new_word[position:])
 
-                if listoffound:
-                    for found in listoffound:
+                if list_trie_results:
+                    results = []
+                    for found in list_trie_results:
+
                         global found_matches_B
                         found_matches_B += 1
-                        return bird_species.find_one(
+                        results.append(bird_species.find_one(
                             {"concat_name": new_word[position:position+found]},
-                            {"_id": 0, "common_name": 1})["common_name"]
+                            {"_id": 0, "common_name": 1})["common_name"])
+                    return results
+
     return False
 
 
@@ -190,7 +194,7 @@ if __name__ == '__main__':
 
     get_bird_families()
     make_trie()
-    testresults("Red-winged blackbird among some cattails in Maine️")
+    testresults("Not the best pic, he was far away, but I finally got to see a red winged black bird and It made me happy.")
 
     #print(len(bird_fams))
     get_bird_posts()
