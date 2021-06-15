@@ -132,7 +132,7 @@ def find_bird_from_sentence(x):
 
 def new_find_bird_from_sentence(x):
     for fams in bird_fams:
-        found_bird = re.search(rf"(?:\W|^)({fams})(?:\W|$)", x, flags=re.IGNORECASE)
+        found_bird = re.search(rf"(?:\W|^)({fams})(?:\W|$|s|es)", x, flags=re.IGNORECASE)
         if found_bird:
             new_word = re.sub('[^a-zA-Z0-9]', '', x[0:found_bird.span()[1]]).lower()
 
@@ -159,9 +159,11 @@ def get_bird_posts():
     method_A = 0
     method_B = 0
     for x in bird_posts:
-        print(x)
+        #print(x)
         tic = time.perf_counter()
-        print(new_find_bird_from_sentence(x["title"]))
+        found_bird=new_find_bird_from_sentence(x["title"])
+        if found_bird is False:
+            print(x)
         toc = time.perf_counter()
         method_A += toc - tic
 
@@ -169,7 +171,7 @@ def get_bird_posts():
         #print(find_bird_from_sentence(x["title"]))
         toc = time.perf_counter()
         method_B += toc - tic
-        print("Method A\t", method_A, "Method B\t", method_B)
+        #print("Method A\t", method_A, "Method B\t", method_B)
 
     print("Method A\t", method_A, "Method B\t", method_B)
     print(len(bird_posts), "posts")
@@ -194,7 +196,7 @@ if __name__ == '__main__':
 
     get_bird_families()
     make_trie()
-    testresults("Not the best pic, he was far away, but I finally got to see a red winged black bird and It made me happy.")
+    testresults("Male And Female Brown Headed Cowbirds-Northern East Coast USA!")
 
     #print(len(bird_fams))
     get_bird_posts()
