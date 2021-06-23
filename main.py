@@ -89,8 +89,7 @@ def get_bird_families():
     bird_specs = list(bird_species.find({}, {"_id": 0, "common_family": 1, 'common_name': 1}))
 
 
-found_matches_A = 0
-found_matches_B = 0
+matches = 0
 
 
 def make_trie():
@@ -100,83 +99,46 @@ def make_trie():
         Bird_Trie.add_word(re.sub('[^a-zA-Z0-9]', '', common_birds['common_name']).lower())
 
 
-
 def find_bird_from_sentence(x):
-    if "sidhe" in x:
-        print("FDGSDFG")
-    for fams in bird_fams:
-        found_bird = re.search(rf"(?:\W|^)({fams})(?:\W|$)", x, flags=re.IGNORECASE)
-        if found_bird:
-            new_word = re.sub('[^a-zA-Z0-9]', '', x[0:found_bird.span()[1]]).lower()
-            for position in range(0, found_bird.span()[0]):
-                if new_word == 'afuzzynewbarredowlet':
-                    print("sdfasd")
-                listoffound=Bird_Trie.find_word(new_word[position:])
-
-                if listoffound:
-                    # print("True")
-                    for found in listoffound:
-                        global found_matches_B
-                        found_matches_B += 1
-                        if new_word[position:] == "barredowlet":
-                            print("fasdf")
-                        return bird_species.find_one(
-                            {"concat_name": new_word[position:position+found]},
-                            {"_id": 0, "common_name": 1})["common_name"]
-    return False
-
-
-# possibility search one worded bird names in one function and then multi worded bird names in another function.
-# need to find where bird fam was initially found
-# or can use trie to search for all 2+ worded birds
-
-def new_find_bird_from_sentence(x):
     for fams in bird_fams:
         found_bird = re.search(rf"(?:\W|^)({fams})(?:\W|$|s|es)", x, flags=re.IGNORECASE)
         if found_bird:
             new_word = re.sub('[^a-zA-Z0-9]', '', x[0:found_bird.span()[1]]).lower()
 
-            for position in range(0, len(new_word)-1):
-                list_trie_results=Bird_Trie.find_word(new_word[position:])
+            for position in range(0, len(new_word) - 1):
+                list_trie_results = Bird_Trie.find_word(new_word[position:])
 
                 if list_trie_results:
-                    results = []
+                    matches = []
                     for found in list_trie_results:
-
-                        global found_matches_B
-                        found_matches_B += 1
-                        results.append(bird_species.find_one(
-                            {"concat_name": new_word[position:position+found]},
+                        global matches
+                        matches += 1
+                        matches.append(bird_species.find_one(
+                            {"concat_name": new_word[position:position + found]},
                             {"_id": 0, "common_name": 1})["common_name"])
-                    return results
+                    return matches
 
     return False
 
 
 def get_bird_posts():
-    bird_posts = list(my_col.find({}, {"_id": 0, "title": 1}))
+    bird_posts = list(my_col.find({}, {"_id": 0, "title": 1})
+                      .sort('date', pymongo.DESCENDING))
 
-    method_A = 0
-    method_B = 0
+    method_time = 0
+
     for x in bird_posts:
-        #print(x)
+        # print(x)
         tic = time.perf_counter()
-        found_bird=new_find_bird_from_sentence(x["title"])
+        found_bird = find_bird_from_sentence(x["title"])
         if found_bird is False:
             print(x)
         toc = time.perf_counter()
-        method_A += toc - tic
+        method_time += toc - tic
 
-        tic = time.perf_counter()
-        #print(find_bird_from_sentence(x["title"]))
-        toc = time.perf_counter()
-        method_B += toc - tic
-        #print("Method A\t", method_A, "Method B\t", method_B)
-
-    print("Method A\t", method_A, "Method B\t", method_B)
+    print("Search time\t", method_time)
     print(len(bird_posts), "posts")
-    print(found_matches_A, "results A")
-    print(found_matches_B, "results B")
+    print(matches, "matches")
     # current result is method B is faster and more accurate.
     # Method A	 69.55064550000003 Method B	 67.19713309999995
     # 1205 posts
@@ -185,20 +147,22 @@ def get_bird_posts():
 
     # print(re.findall(r"(?=(" + '|'.join(qwer) + r"))", x))
 
+
 def testresults(x):
-    print(new_find_bird_from_sentence(x))
+    print(find_bird_from_sentence(x))
+
 
 if __name__ == '__main__':
     print('')
     # create_post_db()
     # create_species_db("birdlist.csv")
-    #print(obtain_new_info())
+    # print(obtain_new_info())
 
     get_bird_families()
     make_trie()
     testresults("Male And Female Brown Headed Cowbirds-Northern East Coast USA!")
 
-    #print(len(bird_fams))
+    # print(len(bird_fams))
     get_bird_posts()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
