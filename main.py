@@ -89,7 +89,7 @@ def get_bird_families():
     bird_specs = list(bird_species.find({}, {"_id": 0, "common_family": 1, 'common_name': 1}))
 
 
-matches = 0
+num_matches = 0
 
 
 def make_trie():
@@ -111,13 +111,18 @@ def find_bird_from_sentence(x):
                 if list_trie_results:
                     matches = []
                     for found in list_trie_results:
-                        global matches
-                        matches += 1
-                        matches.append(bird_species.find_one(
-                            {"concat_name": new_word[position:position + found]},
-                            {"_id": 0, "common_name": 1})["common_name"])
-                    return matches
-
+                        global num_matches
+                        num_matches += 1
+                        result=bird_species.find_one(
+                            {"common_family": fams, "concat_name": new_word[position:position + found]},
+                            {"_id": 0, "common_name": 1})
+                        if result is not None:
+                            matches.append(result["common_name"])
+                    #note this will return matches as a list and should be navigated as such
+                    return {'family':fams,'species':matches}
+                else:
+                    return {'family':fams}
+                    return
     return False
 
 
@@ -131,14 +136,17 @@ def get_bird_posts():
         # print(x)
         tic = time.perf_counter()
         found_bird = find_bird_from_sentence(x["title"])
-        if found_bird is False:
-            print(x)
+        if found_bird is not False:
+            if 'species' in found_bird:
+                if len(found_bird.get('species'))>1:
+                    print (x)
+            #print(found_bird)
         toc = time.perf_counter()
         method_time += toc - tic
 
     print("Search time\t", method_time)
     print(len(bird_posts), "posts")
-    print(matches, "matches")
+    print(num_matches, "matches")
     # current result is method B is faster and more accurate.
     # Method A	 69.55064550000003 Method B	 67.19713309999995
     # 1205 posts
@@ -160,7 +168,7 @@ if __name__ == '__main__':
 
     get_bird_families()
     make_trie()
-    testresults("Male And Female Brown Headed Cowbirds-Northern East Coast USA!")
+    testresults("Red-winged Blackbirds Hanging in the Cattails, Boulder, CO")
 
     # print(len(bird_fams))
     get_bird_posts()
