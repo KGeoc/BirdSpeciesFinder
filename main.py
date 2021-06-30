@@ -100,8 +100,8 @@ def make_trie():
 
 
 def find_bird_from_sentence(x):
-    for fams in bird_fams:
-        found_bird = re.search(rf"(?:\W|^)({fams})(?:\W|$|s|es)", x, flags=re.IGNORECASE)
+    for identified_family in bird_fams:
+        found_bird = re.search(rf"(?:\W|^)({identified_family})(?:\W|$|s|es)", x, flags=re.IGNORECASE)
         if found_bird:
             new_word = re.sub('[^a-zA-Z0-9]', '', x[0:found_bird.span()[1]]).lower()
 
@@ -109,25 +109,21 @@ def find_bird_from_sentence(x):
                 list_trie_results = Bird_Trie.find_word(new_word[position:])
 
                 if list_trie_results:
-                    matches = []
                     for found in list_trie_results:
                         global num_matches
                         num_matches += 1
-                        result=bird_species.find_one(
-                            {"common_family": fams, "concat_name": new_word[position:position + found]},
+                        result = bird_species.find_one(
+                            {"common_family": identified_family, "concat_name": new_word[position:position + found]},
                             {"_id": 0, "common_name": 1})
                         if result is not None:
-                            matches.append(result["common_name"])
-                    #note this will return matches as a list and should be navigated as such
-                    return {'family':fams,'species':matches}
-                else:
-                    return {'family':fams}
-                    return
+                            return {'family': identified_family, 'species': result["common_name"]}
+            return {'family': identified_family}
+
     return False
 
 
 def get_bird_posts():
-    bird_posts = list(my_col.find({}, {"_id": 0, "title": 1})
+    bird_posts = list(my_col.find({}, {"_id": 0, "title": 1,"post_id":1})
                       .sort('date', pymongo.DESCENDING))
 
     method_time = 0
@@ -137,10 +133,13 @@ def get_bird_posts():
         tic = time.perf_counter()
         found_bird = find_bird_from_sentence(x["title"])
         if found_bird is not False:
-            if 'species' in found_bird:
-                if len(found_bird.get('species'))>1:
-                    print (x)
-            #print(found_bird)
+            if 'species' not in found_bird:
+                insert_results(x["post_id"], found_bird['family'], found_bird['species'])
+            else:
+                insert_results(x["post_id"], found_bird['family'], None)
+        else:
+            insert_negative(x["post_id"])
+            # print(found_bird)
         toc = time.perf_counter()
         method_time += toc - tic
 
@@ -156,6 +155,20 @@ def get_bird_posts():
     # print(re.findall(r"(?=(" + '|'.join(qwer) + r"))", x))
 
 
+# placeholder for if bird is found
+def insert_results(url, family, species):
+
+    print("")
+    if species is None:
+        print("None")
+
+
+#placeholder for if bird was not found
+def insert_negative(url):
+    print("")
+
+
+
 def testresults(x):
     print(find_bird_from_sentence(x))
 
@@ -168,7 +181,8 @@ if __name__ == '__main__':
 
     get_bird_families()
     make_trie()
-    testresults("Red-winged Blackbirds Hanging in the Cattails, Boulder, CO")
+    #testresults("Turkey vulture")
+    # turkey vulture will not be found due to the first word being found being turkey.
 
     # print(len(bird_fams))
     get_bird_posts()
