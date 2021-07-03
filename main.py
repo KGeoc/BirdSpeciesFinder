@@ -123,7 +123,7 @@ def find_bird_from_sentence(x):
 
 
 def get_bird_posts():
-    bird_posts = list(my_col.find({}, {"_id": 0, "title": 1,"post_id":1})
+    bird_posts = list(my_col.find({}, {"_id": 0, "title": 1, "post_id": 1})
                       .sort('date', pymongo.DESCENDING))
 
     method_time = 0
@@ -134,9 +134,9 @@ def get_bird_posts():
         found_bird = find_bird_from_sentence(x["title"])
         if found_bird is not False:
             if 'species' not in found_bird:
-                insert_results(x["post_id"], found_bird['family'], found_bird['species'])
+                insert_results(x["post_id"], found_bird['family'], None,True)
             else:
-                insert_results(x["post_id"], found_bird['family'], None)
+                insert_results(x["post_id"], found_bird['family'], found_bird['species'],True)
         else:
             insert_negative(x["post_id"])
             # print(found_bird)
@@ -156,20 +156,34 @@ def get_bird_posts():
 
 
 # placeholder for if bird is found
-def insert_results(url, family, species):
+def insert_results(url, family, species,automated):
+    # pseudo update url with family and species if provided
+    # add field automated and make true
 
-    print("")
     if species is None:
-        print("None")
+        my_col.update_one({"post_id": url},
+                          {"$set": {
+                              "family_name": family,
+                              "species": None,
+                              "automated": automated,
+                              "processed":True
+                          }})
+    else:
+        my_col.update_one({"post_id": url},
+                          {"$set": {
+                              "family_name": family,
+                              "species": species,
+                              "automated": automated,
+                              "processed":True
+                          }})
 
 
-#placeholder for if bird was not found
+# placeholder for if bird was not found
 def insert_negative(url):
     print("")
 
 
-
-def testresults(x):
+def test_results(x):
     print(find_bird_from_sentence(x))
 
 
@@ -181,7 +195,7 @@ if __name__ == '__main__':
 
     get_bird_families()
     make_trie()
-    #testresults("Turkey vulture")
+    # test_results("Turkey vulture")
     # turkey vulture will not be found due to the first word being found being turkey.
 
     # print(len(bird_fams))
