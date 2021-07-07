@@ -123,7 +123,7 @@ def find_bird_from_sentence(x):
 
 
 def get_bird_posts():
-    bird_posts = list(my_col.find({}, {"_id": 0, "title": 1, "post_id": 1})
+    bird_posts = list(my_col.find({"processed": { "$exists" : False }}, {"_id": 0, "title": 1, "post_id": 1})
                       .sort('date', pymongo.DESCENDING))
 
     method_time = 0
@@ -138,7 +138,7 @@ def get_bird_posts():
             else:
                 insert_results(x["post_id"], found_bird['family'], found_bird['species'],True)
         else:
-            insert_negative(x["post_id"])
+            insert_negative(x["post_id"],True)
             # print(found_bird)
         toc = time.perf_counter()
         method_time += toc - tic
@@ -179,8 +179,14 @@ def insert_results(url, family, species,automated):
 
 
 # placeholder for if bird was not found
-def insert_negative(url):
-    print("")
+def insert_negative(url, automated):
+    my_col.update_one({"post_id": url},
+                      {"$set": {
+                          "family_name": None,
+                          "species": None,
+                          "automated": automated,
+                          "processed": True
+                      }})
 
 
 def test_results(x):
@@ -191,7 +197,7 @@ if __name__ == '__main__':
     print('')
     # create_post_db()
     # create_species_db("birdlist.csv")
-    # print(obtain_new_info())
+    #print(obtain_new_info())
 
     get_bird_families()
     make_trie()
