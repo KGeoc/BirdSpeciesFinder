@@ -63,7 +63,7 @@ def obtain_new_info():
                     "date": posts.created_utc,
                     "title": posts.title,
                     "subreddit": posts.subreddit.display_name,
-                    "post_searched": False
+                    "processed": False
                 })
             except AttributeError as ex:
                 my_col.insert_one({
@@ -72,7 +72,7 @@ def obtain_new_info():
                     "date": posts.created_utc,
                     "title": posts.title,
                     "subreddit": posts.subreddit.display_name,
-                    "post_searched": False
+                    "processed": False
                 })
             added_posts += 1
     return added_posts
