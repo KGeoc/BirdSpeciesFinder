@@ -205,6 +205,6 @@ if __name__ == '__main__':
     # turkey vulture will not be found due to the first word being found being turkey.
 
     # print(len(bird_fams))
-    #get_bird_posts()
+    get_bird_posts()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
