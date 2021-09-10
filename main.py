@@ -1,6 +1,3 @@
-import datetime as dt
-import sys
-
 from TrieNode import TrieNode as Bird_Trie
 import re
 import time
@@ -123,7 +120,7 @@ def find_bird_from_sentence(x):
 
 
 def get_bird_posts():
-    bird_posts = list(my_col.find({"processed": { "$exists" : False }}, {"_id": 0, "title": 1, "post_id": 1})
+    bird_posts = list(my_col.find({"processed": False}, {"_id": 0, "title": 1, "post_id": 1})
                       .sort('date', pymongo.DESCENDING))
 
     method_time = 0
@@ -195,8 +192,8 @@ def test_results(x):
 
 if __name__ == '__main__':
     print('')
-    # create_post_db()
-    # create_species_db("birdlist.csv")
+    #create_post_db()
+    #create_species_db("birdlist.csv")
     print(obtain_new_info())
 
     get_bird_families()
